@@ -7,10 +7,9 @@ from matplotlib.widgets import Cursor
 import numpy as np
 import scipy.fftpack
 
-
 ADC_file = open("ADC_data.txt","r")
-freq_s = 900
-delta_t = 1/freq_s
+freq_s = 900.0
+delta_t = 1.0/freq_s
 ADC_data_ar = []
 num_samples = 500
 time_ar = np.linspace(0.0, num_samples*delta_t, num_samples)
@@ -29,14 +28,6 @@ plt.xlabel("time [s]")
 plt.ylabel("Voltage [V]")
 plt.title('digital_oscilloscope')
 ax.grid()
-
-#plot 2 FFT
-#xf = np.linspace(0.0, 1.0/(2.0*delta_t), num_samples/2)
-#yf = scipy.fftpack.fft(ADC_data_ar)
-#fig2 = plt.figure()
-#ax2 = fig2.subplots()
-#ax2.plot(xf,2.0/num_samples*np.abs(yf[0:num_samples/2],color='red')
-#ax2.grid()
 
 #defining the cursor for plot 1
 cursor = Cursor(ax, horizOn = True, vertOn=True, color='red', linewidth=1, useblit=True)
