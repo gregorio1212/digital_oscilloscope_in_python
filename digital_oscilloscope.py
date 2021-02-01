@@ -1,19 +1,20 @@
  # @file digital_oscilloscope.py
  # @author Gregório da Luz
+ # @author Maksymilian Mruszczak
  # @date January 2021
  # @brief digital_oscilloscope plotting ADC values from .txt file
 from matplotlib import pyplot as plt
 from matplotlib.widgets import Cursor
 import numpy as np
-import scipy.fftpack
+from scipy.fftpack import fft
 
 class Oscilloscope:
     def __init__(self):
+        self.coord = []
+        #variable to clean coord after two points FOR PLOT 1
+        self.control = 0
         self.fig = plt.figure(1)
         self.ax, self.axfft = self.fig.subplots(1, 2, sharey=True)
-        plt.xlabel("time [s]")
-        plt.ylabel("Voltage [V]")
-        plt.title('digital_oscilloscope')
         self.ax.set_xlabel("time [s]")
         self.ax.set_ylabel("Voltage [V]")
         self.ax.set_title('digital_oscilloscope')
@@ -28,6 +29,9 @@ class Oscilloscope:
         #Creating the annotation framework for plot 1
         self.annot = self.ax.annotate("", xy=(0,0), xytext=(-40,40),textcoords="offset points", bbox=dict(boxstyle="round4", fc="grey", ec="k", lw=2), arrowprops=dict(arrowstyle="-|>"))
         self.annot.set_visible(False)
+        # bind event
+        self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+
 
     def draw(self, filename):
         freq_s = 900.0
@@ -43,41 +47,34 @@ class Oscilloscope:
             for i in time_ar:
                 temp = int(ADC_file.readline(),16)*bit_multiplier
                 ADC_data_ar.append(temp)
-        ADC_fft_data_ar = np.abs(scipy.fftpack.fft(ADC_data_ar))/num_samples
+        ADC_fft_data_ar = np.abs(fft(ADC_data_ar))/num_samples
         self.ax.plot(time_ar, ADC_data_ar, color='blue')
         self.axfft.plot(freq_ar, ADC_fft_data_ar, color='blue')
 
+    #Function for storing and showing the clicked values FOR PLOT 1
+    def onclick(self, event):
+        if self.control == 2:
+            self.coord = []
+            self.control = 0
+        self.coord.append((event.xdata, event.ydata))
+        x = event.xdata
+        y = event.ydata
+        self.annot.xy = (x,y)
+        text = "({:.2g},{:.2g})".format( x,y )
+        self.annot.set_text(text)
+        self.annot.set_visible(True)
+        self.fig.canvas.draw() #redraw the figure
+        if self.control == 1:
+            # Unzipping the coord list in two different arrays
+            x1, y1 = zip(*self.coord)
+            diff_x = format(abs(x1[0]-x1[1]),'.4f')
+            diff_y = format(abs(y1[0]-y1[1]),'.4f')
+            print("distance x = "+str(diff_x))
+            print("distance y = "+str(diff_y))
+        self.control +=1
 
-oscope = Oscilloscope()
 
-#Function for storing and showing the clicked values FOR PLOT 1
-coord = []
-#variable to clean coord after two points FOR PLOT 1
-control = 0
-def onclick(event):
-    global coord
-    global control
-    if control == 2:
-        coord = []
-        control = 0
-    coord.append((event.xdata, event.ydata))
-    x = event.xdata
-    y = event.ydata
-    oscope.annot.xy = (x,y)
-    text = "({:.2g},{:.2g})".format( x,y )
-    oscope.annot.set_text(text)
-    oscope.annot.set_visible(True)
-    oscope.fig.canvas.draw() #redraw the figure
-    if control == 1:
-        # Unzipping the coord list in two different arrays
-        x1, y1 = zip(*coord)
-        diff_x = format(abs(x1[0]-x1[1]),'.4f')
-        diff_y = format(abs(y1[0]-y1[1]),'.4f')
-        print("distance x = "+str(diff_x))
-        print("distance y = "+str(diff_y))
-    control +=1
-
-oscope.fig.canvas.mpl_connect('button_press_event', onclick)
-
-oscope.draw('ADC_data.txt')
-plt.show()
+if __name__ == '__main__':
+    oscope = Oscilloscope()
+    oscope.draw('ADC_data.txt')
+    plt.show()
