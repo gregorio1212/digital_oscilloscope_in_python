@@ -7,12 +7,17 @@ from matplotlib.widgets import Cursor
 import numpy as np
 import scipy.fftpack
 
+class Oscilloscope:
+    def __init__(self):
+        pass
+
 ADC_file = open("ADC_data.txt","r")
 freq_s = 900.0
 delta_t = 1.0/freq_s
 ADC_data_ar = []
 num_samples = 500
 time_ar = np.linspace(0.0, num_samples*delta_t, num_samples)
+freq_ar = np.linspace(0.0, freq_s, num_samples)
 #5 V - 10 bits ADC 5/1023=0.0048
 bit_multiplier = 0.0048
 
@@ -22,15 +27,24 @@ for i in time_ar:
     ADC_data_ar.append(temp)
 #plot 1
 fig = plt.figure(1)
-ax = fig.subplots()
-ax.plot(time_ar,ADC_data_ar,color='blue')
+ax, axfft = fig.subplots(1, 2, sharey=True)
 plt.xlabel("time [s]")
 plt.ylabel("Voltage [V]")
 plt.title('digital_oscilloscope')
+ax.set_xlabel("time [s]")
+ax.set_ylabel("Voltage [V]")
+ax.set_title('digital_oscilloscope')
+axfft.set_xlabel("frequency [Hz]")
+axfft.set_ylabel("Voltage [V]")
+axfft.set_title('digital_oscilloscope fft')
+ax.plot(time_ar, ADC_data_ar, color='blue')
+ADC_fft_data_ar = np.abs(scipy.fftpack.fft(ADC_data_ar))/num_samples
+axfft.plot(freq_ar, ADC_fft_data_ar, color='blue')
 ax.grid()
 
 #defining the cursor for plot 1
 cursor = Cursor(ax, horizOn = True, vertOn=True, color='red', linewidth=1, useblit=True)
+cursorfft = Cursor(axfft, horizOn = True, vertOn=True, color='green', linewidth=1, useblit=True)
 
 #Creating the annotation framework for plot 1
 annot = ax.annotate("", xy=(0,0), xytext=(-40,40),textcoords="offset points", bbox=dict(boxstyle="round4", fc="grey", ec="k", lw=2), arrowprops=dict(arrowstyle="-|>"))
