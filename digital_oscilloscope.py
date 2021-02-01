@@ -9,46 +9,46 @@ import scipy.fftpack
 
 class Oscilloscope:
     def __init__(self):
-        pass
+        self.fig = plt.figure(1)
+        self.ax, self.axfft = self.fig.subplots(1, 2, sharey=True)
+        plt.xlabel("time [s]")
+        plt.ylabel("Voltage [V]")
+        plt.title('digital_oscilloscope')
+        self.ax.set_xlabel("time [s]")
+        self.ax.set_ylabel("Voltage [V]")
+        self.ax.set_title('digital_oscilloscope')
+        self.axfft.set_xlabel("frequency [Hz]")
+        self.axfft.set_ylabel("Voltage [V]")
+        self.axfft.set_title('digital_oscilloscope fft')
+        #defining the cursor for plot 1
+        self.cursor1 = Cursor(self.ax, horizOn = True, vertOn=True, color='red', linewidth=1, useblit=True)
+        self.cursor2 = Cursor(self.axfft, horizOn = True, vertOn=True, color='green', linewidth=1, useblit=True)
+        self.ax.grid()
+        self.axfft.grid()
+        #Creating the annotation framework for plot 1
+        self.annot = self.ax.annotate("", xy=(0,0), xytext=(-40,40),textcoords="offset points", bbox=dict(boxstyle="round4", fc="grey", ec="k", lw=2), arrowprops=dict(arrowstyle="-|>"))
+        self.annot.set_visible(False)
 
-ADC_file = open("ADC_data.txt","r")
-freq_s = 900.0
-delta_t = 1.0/freq_s
-ADC_data_ar = []
-num_samples = 500
-time_ar = np.linspace(0.0, num_samples*delta_t, num_samples)
-freq_ar = np.linspace(0.0, freq_s, num_samples)
-#5 V - 10 bits ADC 5/1023=0.0048
-bit_multiplier = 0.0048
+    def draw(self, filename):
+        freq_s = 900.0
+        delta_t = 1.0/freq_s
+        ADC_data_ar = []
+        num_samples = 500
+        time_ar = np.linspace(0.0, num_samples*delta_t, num_samples)
+        freq_ar = np.linspace(0.0, freq_s, num_samples)
+        #5 V - 10 bits ADC 5/1023=0.0048
+        bit_multiplier = 0.0048
+        #filling the ADC array
+        with open(filename, 'r') as ADC_file:
+            for i in time_ar:
+                temp = int(ADC_file.readline(),16)*bit_multiplier
+                ADC_data_ar.append(temp)
+        ADC_fft_data_ar = np.abs(scipy.fftpack.fft(ADC_data_ar))/num_samples
+        self.ax.plot(time_ar, ADC_data_ar, color='blue')
+        self.axfft.plot(freq_ar, ADC_fft_data_ar, color='blue')
 
-#filling the ADC array
-for i in time_ar:
-    temp = int(ADC_file.readline(),16)*bit_multiplier
-    ADC_data_ar.append(temp)
-#plot 1
-fig = plt.figure(1)
-ax, axfft = fig.subplots(1, 2, sharey=True)
-plt.xlabel("time [s]")
-plt.ylabel("Voltage [V]")
-plt.title('digital_oscilloscope')
-ax.set_xlabel("time [s]")
-ax.set_ylabel("Voltage [V]")
-ax.set_title('digital_oscilloscope')
-axfft.set_xlabel("frequency [Hz]")
-axfft.set_ylabel("Voltage [V]")
-axfft.set_title('digital_oscilloscope fft')
-ax.plot(time_ar, ADC_data_ar, color='blue')
-ADC_fft_data_ar = np.abs(scipy.fftpack.fft(ADC_data_ar))/num_samples
-axfft.plot(freq_ar, ADC_fft_data_ar, color='blue')
-ax.grid()
 
-#defining the cursor for plot 1
-cursor = Cursor(ax, horizOn = True, vertOn=True, color='red', linewidth=1, useblit=True)
-cursorfft = Cursor(axfft, horizOn = True, vertOn=True, color='green', linewidth=1, useblit=True)
-
-#Creating the annotation framework for plot 1
-annot = ax.annotate("", xy=(0,0), xytext=(-40,40),textcoords="offset points", bbox=dict(boxstyle="round4", fc="grey", ec="k", lw=2), arrowprops=dict(arrowstyle="-|>"))
-annot.set_visible(False)
+oscope = Oscilloscope()
 
 #Function for storing and showing the clicked values FOR PLOT 1
 coord = []
@@ -63,11 +63,11 @@ def onclick(event):
     coord.append((event.xdata, event.ydata))
     x = event.xdata
     y = event.ydata
-    annot.xy = (x,y)
+    oscope.annot.xy = (x,y)
     text = "({:.2g},{:.2g})".format( x,y )
-    annot.set_text(text)
-    annot.set_visible(True)
-    fig.canvas.draw() #redraw the figure
+    oscope.annot.set_text(text)
+    oscope.annot.set_visible(True)
+    oscope.fig.canvas.draw() #redraw the figure
     if control == 1:
         # Unzipping the coord list in two different arrays
         x1, y1 = zip(*coord)
@@ -77,6 +77,7 @@ def onclick(event):
         print("distance y = "+str(diff_y))
     control +=1
 
-fig.canvas.mpl_connect('button_press_event', onclick)
+oscope.fig.canvas.mpl_connect('button_press_event', onclick)
 
+oscope.draw('ADC_data.txt')
 plt.show()
