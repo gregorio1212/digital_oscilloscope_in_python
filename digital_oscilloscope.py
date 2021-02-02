@@ -29,9 +29,11 @@ class Oscilloscope:
         #Creating the annotation framework for plot 1
         self.annot = self.ax.annotate("", xy=(0,0), xytext=(-40,40),textcoords="offset points", bbox=dict(boxstyle="round4", fc="grey", ec="k", lw=2), arrowprops=dict(arrowstyle="-|>"))
         self.annot.set_visible(False)
+        # create labels
+        self.file_label = self.fig.text(0, 0, 'data file path: -')
+        self.cursor_label = self.fig.text(.5, 0, 'distance: -')
         # bind event
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
-
 
     def draw(self, filename):
         freq_s = 900.0
@@ -50,6 +52,8 @@ class Oscilloscope:
         ADC_fft_data_ar = np.abs(fft(ADC_data_ar))/num_samples
         self.ax.plot(time_ar, ADC_data_ar, color='blue')
         self.axfft.plot(freq_ar, ADC_fft_data_ar, color='blue')
+        self.file_label.set_text('data file path: %s' % filename)
+        plt.draw()
 
     #Function for storing and showing the clicked values FOR PLOT 1
     def onclick(self, event):
@@ -71,6 +75,8 @@ class Oscilloscope:
             diff_y = format(abs(y1[0]-y1[1]),'.4f')
             print("distance x = "+str(diff_x))
             print("distance y = "+str(diff_y))
+            self.cursor_label.set_text('distance: x = %s y = %s' % (diff_x, diff_y))
+            plt.draw()
         self.control +=1
 
 
