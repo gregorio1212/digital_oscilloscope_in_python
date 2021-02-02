@@ -3,12 +3,19 @@
  # @author Maksymilian Mruszczak
  # @date January 2021
  # @brief digital_oscilloscope plotting ADC values from .txt file
+
 from matplotlib import pyplot as plt
 from matplotlib.widgets import Cursor
 import numpy as np
 from scipy.fftpack import fft
 
 class Oscilloscope:
+    LABEL_STYLE = dict(
+            boxstyle = "round",
+            ec = (.5, .7, 1.),
+            fc = (.7, .9, 1.),
+            )
+
     def __init__(self):
         self.coord = []
         #variable to clean coord after two points FOR PLOT 1
@@ -29,8 +36,8 @@ class Oscilloscope:
         self.annot = self.ax.annotate("", xy=(0,0), xytext=(-40,40),textcoords="offset points", bbox=dict(boxstyle="round4", fc="grey", ec="k", lw=2), arrowprops=dict(arrowstyle="-|>"))
         self.annot.set_visible(False)
         # create labels
-        self.file_label = self.fig.text(0, 0, 'data file path: -')
-        self.cursor_label = self.fig.text(.5, 0, 'distance: -')
+        self.file_label = self.fig.text(.05, .95, 'data file path: -', bbox=self.LABEL_STYLE, alpha=.5)
+        self.cursor_label = self.fig.text(.5, .95, 'distance: -', bbox=self.LABEL_STYLE, alpha=.5)
         # bind event
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
