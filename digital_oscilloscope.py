@@ -22,8 +22,7 @@ class Oscilloscope:
         self.axfft.set_ylabel("Voltage [V]")
         self.axfft.set_title('digital_oscilloscope fft')
         #defining the cursor for plot 1
-        self.cursor1 = Cursor(self.ax, horizOn = True, vertOn=True, color='red', linewidth=1, useblit=True)
-        self.cursor2 = Cursor(self.axfft, horizOn = True, vertOn=True, color='green', linewidth=1, useblit=True)
+        self.cursor = Cursor(self.ax, horizOn = True, vertOn=True, color='red', linewidth=1, useblit=True)
         self.ax.grid()
         self.axfft.grid()
         #Creating the annotation framework for plot 1
@@ -51,7 +50,7 @@ class Oscilloscope:
                 ADC_data_ar.append(temp)
         ADC_fft_data_ar = np.abs(fft(ADC_data_ar))/num_samples
         self.ax.plot(time_ar, ADC_data_ar, color='blue')
-        self.axfft.plot(freq_ar, ADC_fft_data_ar, color='blue')
+        self.axfft.plot(freq_ar, ADC_fft_data_ar, color='red')
         self.file_label.set_text('data file path: %s' % filename)
         plt.draw()
 
