@@ -1,5 +1,5 @@
  # @file digital_oscilloscope.py
- # @author Gregório da Luz
+ # @author Gregório da Luz;
  # @author Maksymilian Mruszczak
  # @date January 2021
  # @brief digital_oscilloscope plotting ADC values from .txt file
